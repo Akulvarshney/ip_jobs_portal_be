@@ -1,0 +1,223 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id               Int               @id @default(autoincrement())
+  name             String
+  email            String            @unique
+  password         String
+  role             Role
+  status           String            @default("ACTIVE") // ACTIVE, SUSPENDED
+  authProvider     String            @default("EMAIL") // EMAIL, GOOGLE
+  googleId         String?
+  applications     Application[]
+  candidateProfile CandidateProfile?
+  employerMember   EmployerMember?
+  savedJobs        SavedJob[]
+  notifications    Notification[]
+  interviews       Interview[]       @relation("CandidateInterviews")
+}
+
+enum Role {
+  EMPLOYER
+  CANDIDATE
+  ADMIN
+}
+
+model CandidateProfile {
+  id                   Int              @id @default(autoincrement())
+  userId               Int              @unique
+  user                 User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phone                String?
+  city                 String?
+  designation          String?
+  professionalCategory String?          // e.g. Insolvency Professional, CA, CS, CMA, Lawyer, Finance
+  experience           Int?             // Total experience in years
+  currentSalary        Float?
+  expectedSalary       Float?
+  noticePeriod         String?
+  profilePhoto         String?
+  bio                  String?
+  visibility           String?          @default("PUBLIC") // PUBLIC, CONFIDENTIAL, PRIVATE
+  resumeUrl            String?
+  educations           Education[]
+  experiences          Experience[]
+  skills               CandidateSkill[]
+  certifications       Certification[]
+}
+
+model Education {
+  id                 Int              @id @default(autoincrement())
+  candidateProfileId Int
+  candidateProfile   CandidateProfile @relation(fields: [candidateProfileId], references: [id], onDelete: Cascade)
+  qualification      String
+  degree             String
+  specialisation     String?
+  institution        String
+  startYear          Int?
+  completionYear     Int?
+}
+
+model Experience {
+  id                 Int              @id @default(autoincrement())
+  candidateProfileId Int
+  candidateProfile   CandidateProfile @relation(fields: [candidateProfileId], references: [id], onDelete: Cascade)
+  organisation       String
+  designation        String
+  startDate          DateTime?
+  endDate            DateTime?
+  isCurrent          Boolean          @default(false)
+  description        String?
+}
+
+model Skill {
+  id          Int              @id @default(autoincrement())
+  name        String           @unique
+  candidates  CandidateSkill[]
+  jobs        JobSkill[]
+}
+
+model CandidateSkill {
+  candidateProfileId Int
+  skillId            Int
+  candidateProfile   CandidateProfile @relation(fields: [candidateProfileId], references: [id], onDelete: Cascade)
+  skill              Skill            @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([candidateProfileId, skillId])
+}
+
+model Certification {
+  id                 Int              @id @default(autoincrement())
+  candidateProfileId Int
+  candidateProfile   CandidateProfile @relation(fields: [candidateProfileId], references: [id], onDelete: Cascade)
+  name               String           // e.g. IBBI Registration, CA Final, CS Member
+  issuingOrg         String           // e.g. IBBI, ICAI, ICSI
+  regNumber          String?
+  issueDate          DateTime?
+  expiryDate         DateTime?
+  documentUrl        String?
+  createdAt          DateTime         @default(now())
+}
+
+model Employer {
+  id           Int              @id @default(autoincrement())
+  name         String
+  logoUrl      String?
+  type         String?
+  description  String?
+  website      String?
+  location     String?
+  status       String           @default("APPROVED") // APPROVED, SUSPENDED, PENDING
+  members      EmployerMember[]
+  jobs         Job[]
+  interviews   Interview[]
+}
+
+model EmployerMember {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @unique
+  employerId Int
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  employer   Employer @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  role       String   @default("MEMBER") // ADMIN, RECRUITER, MEMBER
+}
+
+model Job {
+  id           Int           @id @default(autoincrement())
+  title        String
+  description  String
+  requirements String
+  createdAt    DateTime      @default(now())
+  employerId   Int
+  employer     Employer      @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  applications Application[]
+  savedBy      SavedJob[]
+  skills       JobSkill[]
+  interviews   Interview[]
+  status       String        @default("ACTIVE") // ACTIVE, PAUSED, CLOSED
+}
+
+model JobSkill {
+  jobId   Int
+  skillId Int
+  job     Job   @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  skill   Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([jobId, skillId])
+}
+
+model Application {
+  id          Int               @id @default(autoincrement())
+  jobId       Int
+  candidateId Int
+  status      ApplicationStatus @default(APPLIED)
+  coverNote   String?
+  createdAt   DateTime          @default(now())
+  job         Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  candidate   User              @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  interviews  Interview[]
+}
+
+enum ApplicationStatus {
+  APPLIED
+  SHORTLISTED
+  INTERVIEW
+  SELECTED
+  REJECTED
+  WITHDRAWN
+}
+
+model Interview {
+  id            Int          @id @default(autoincrement())
+  applicationId Int?
+  application   Application? @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  candidateId   Int
+  candidate     User         @relation(name: "CandidateInterviews", fields: [candidateId], references: [id], onDelete: Cascade)
+  employerId    Int?
+  employer      Employer?    @relation(fields: [employerId], references: [id], onDelete: SetNull)
+  jobId         Int?
+  job           Job?         @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  interviewDate DateTime
+  interviewTime String?
+  interviewType String       @default("ONLINE") // ONLINE, IN_PERSON, PHONE
+  meetingLink   String?
+  interviewer   String?
+  notes         String?
+  status        String       @default("SCHEDULED") // SCHEDULED, COMPLETED, CANCELLED
+  createdAt     DateTime     @default(now())
+}
+
+model SavedJob {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  jobId       Int
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, jobId])
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Report {
+  id          Int      @id @default(autoincrement())
+  reporterId  Int
+  type        String
+  description String
+  status      String   @default("OPEN")
+  createdAt   DateTime @default(now())
+}
