@@ -22,6 +22,8 @@
   },
   "homepage": "https://github.com/Akulvarshney/ip_jobs_portal_be#readme",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1135.0",
+    "@aws-sdk/s3-request-presigner": "^3.1135.0",
     "@prisma/client": "^5.22.0",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
@@ -29,6 +31,7 @@
     "express": "^5.2.1",
     "google-auth-library": "^11.1.0",
     "jsonwebtoken": "^9.0.3",
+    "multer": "^2.4.0",
     "nodemailer": "^10.0.10"
   },
   "devDependencies": {

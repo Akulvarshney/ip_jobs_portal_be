@@ -182,7 +182,8 @@ exports.register = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        authProvider: 'EMAIL'
+        authProvider: 'EMAIL',
+        stayUpdated: user.stayUpdated || false
       }
     });
   } catch (error) {
@@ -219,7 +220,8 @@ exports.login = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        authProvider: user.authProvider || 'EMAIL'
+        authProvider: user.authProvider || 'EMAIL',
+        stayUpdated: user.stayUpdated || false
       }
     });
   } catch (error) {
@@ -347,7 +349,8 @@ exports.googleAuth = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        authProvider: user.authProvider || 'GOOGLE'
+        authProvider: user.authProvider || 'GOOGLE',
+        stayUpdated: user.stayUpdated || false
       }
     });
   } catch (error) {
@@ -368,7 +371,8 @@ exports.getMe = async (req, res) => {
         role: true,
         status: true,
         authProvider: true,
-        googleId: true
+        googleId: true,
+        stayUpdated: true
       }
     });
     if (!user) return res.status(404).json({ error: 'User not found' });

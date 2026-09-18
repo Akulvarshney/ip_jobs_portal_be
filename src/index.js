@@ -8,6 +8,8 @@ const applicationRoutes = require('./routes/applications');
 const adminRoutes = require('./routes/admin');
 const candidateRoutes = require('./routes/candidate');
 const employerRoutes = require('./routes/employer');
+const uploadRoutes = require('./routes/upload');
+const newsletterRoutes = require('./routes/newsletter');
 
 dotenv.config();
 
@@ -40,6 +42,9 @@ app.use('/api/applications', applicationRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/candidate', candidateRoutes);
 app.use('/api/employer', employerRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/newsletter', newsletterRoutes);
+app.use('/api/stay-updated', newsletterRoutes);
 
 const PORT = process.env.PORT || 5001;
 

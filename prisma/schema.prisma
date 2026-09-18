@@ -8,20 +8,22 @@ generator client {
 }
 
 model User {
-  id               Int               @id @default(autoincrement())
-  name             String
-  email            String            @unique
-  password         String
-  role             Role
-  status           String            @default("ACTIVE") // ACTIVE, SUSPENDED
-  authProvider     String            @default("EMAIL") // EMAIL, GOOGLE
-  googleId         String?
-  applications     Application[]
-  candidateProfile CandidateProfile?
-  employerMember   EmployerMember?
-  savedJobs        SavedJob[]
-  notifications    Notification[]
-  interviews       Interview[]       @relation("CandidateInterviews")
+  id                     Int                    @id @default(autoincrement())
+  name                   String
+  email                  String                 @unique
+  password               String
+  role                   Role
+  status                 String                 @default("ACTIVE") // ACTIVE, SUSPENDED
+  authProvider           String                 @default("EMAIL") // EMAIL, GOOGLE
+  googleId               String?
+  stayUpdated            Boolean                @default(false)
+  applications           Application[]
+  candidateProfile       CandidateProfile?
+  employerMember         EmployerMember?
+  savedJobs              SavedJob[]
+  notifications          Notification[]
+  interviews             Interview[]            @relation("CandidateInterviews")
+  stayUpdatedSubscriber  StayUpdatedSubscriber?
 }
 
 enum Role {
@@ -48,11 +50,20 @@ model CandidateProfile {
   jobAlerts            Boolean          @default(true)
   applicationUpdates   Boolean          @default(true)
   interviewReminders   Boolean          @default(true)
+  stayUpdated          Boolean          @default(false)
   resumeUrl            String?
   educations           Education[]
   experiences          Experience[]
   skills               CandidateSkill[]
   certifications       Certification[]
+}
+
+model StayUpdatedSubscriber {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  userId    Int?     @unique
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
 }
 
 model Education {

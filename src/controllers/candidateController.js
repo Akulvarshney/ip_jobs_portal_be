@@ -33,6 +33,151 @@ async function getOrCreateCandidateProfile(userId) {
   return profile;
 }
 
+/**
+ * Robust, transparent calculation of Candidate Profile Completeness (0 - 100%)
+ */
+function calculateProfileCompleteness(profile) {
+  if (!profile) {
+    return {
+      score: 0,
+      breakdown: [],
+      missingItems: [],
+      completedCount: 0,
+      totalItemsCount: 0
+    };
+  }
+
+  const items = [
+    {
+      key: 'account',
+      label: 'Account Registration',
+      points: 5,
+      completed: Boolean(profile.userId || profile.user?.email),
+      tip: 'Account created with email & name',
+      route: '/candidate/profile'
+    },
+    {
+      key: 'phone',
+      label: 'Contact Phone Number',
+      points: 5,
+      completed: Boolean(profile.phone && profile.phone.trim().length >= 6),
+      tip: 'Add your primary mobile or contact number',
+      route: '/candidate/profile'
+    },
+    {
+      key: 'city',
+      label: 'Current Location / City',
+      points: 5,
+      completed: Boolean(profile.city && profile.city.trim().length > 0),
+      tip: 'Specify your base city / location',
+      route: '/candidate/profile'
+    },
+    {
+      key: 'designation',
+      label: 'Current Designation / Title',
+      points: 5,
+      completed: Boolean(profile.designation && profile.designation.trim().length > 0),
+      tip: 'Enter your current job title or role',
+      route: '/candidate/profile'
+    },
+    {
+      key: 'category',
+      label: 'Professional Category',
+      points: 5,
+      completed: Boolean(profile.professionalCategory && profile.professionalCategory.trim().length > 0),
+      tip: 'Select professional category (Insolvency Professional, CA, CS, Lawyer, etc.)',
+      route: '/candidate/profile'
+    },
+    {
+      key: 'bio',
+      label: 'Professional Bio & Summary',
+      points: 5,
+      completed: Boolean(profile.bio && profile.bio.trim().length >= 10),
+      tip: 'Write a brief professional summary about your practice',
+      route: '/candidate/profile'
+    },
+    {
+      key: 'experienceYears',
+      label: 'Experience & Notice Period',
+      points: 5,
+      completed: Boolean((profile.experience !== null && profile.experience !== undefined) || (profile.noticePeriod && profile.noticePeriod.trim().length > 0)),
+      tip: 'Provide total experience years or notice period',
+      route: '/candidate/profile'
+    },
+    {
+      key: 'photo',
+      label: 'Profile Photo',
+      points: 10,
+      completed: Boolean(profile.profilePhoto && profile.profilePhoto.trim().length > 0),
+      tip: 'Upload a professional profile photo',
+      route: '/candidate/profile'
+    },
+    {
+      key: 'resume',
+      label: 'Resume / CV Document',
+      points: 20,
+      completed: Boolean(profile.resumeUrl && profile.resumeUrl.trim().length > 0),
+      tip: 'Upload your latest CV or document',
+      route: '/candidate/resume'
+    },
+    {
+      key: 'skills',
+      label: 'Domain Skills',
+      points: 15,
+      completed: (profile.skills?.length || 0) >= 1,
+      earnedPoints: (profile.skills?.length || 0) >= 3 ? 15 : (profile.skills?.length || 0) >= 1 ? 10 : 0,
+      tip: (profile.skills?.length || 0) >= 3 ? 'Skills portfolio complete' : 'Add at least 3 domain skills (CIRP, IBC, Liquidation, etc.)',
+      route: '/candidate/profile'
+    },
+    {
+      key: 'experienceHistory',
+      label: 'Work Experience History',
+      points: 10,
+      completed: (profile.experiences?.length || 0) >= 1,
+      tip: 'Add at least 1 work experience record',
+      route: '/candidate/profile'
+    },
+    {
+      key: 'education',
+      label: 'Education & Qualifications',
+      points: 5,
+      completed: (profile.educations?.length || 0) >= 1,
+      tip: 'Add your highest educational degree / qualifications',
+      route: '/candidate/profile'
+    },
+    {
+      key: 'certification',
+      label: 'Professional Certifications',
+      points: 5,
+      completed: (profile.certifications?.length || 0) >= 1,
+      tip: 'Add IBBI, ICAI, ICSI, Bar Council or relevant registrations',
+      route: '/candidate/profile'
+    }
+  ];
+
+  let totalScore = 0;
+  items.forEach(item => {
+    const itemEarned = item.earnedPoints !== undefined 
+      ? item.earnedPoints 
+      : (item.completed ? item.points : 0);
+    item.earned = itemEarned;
+    totalScore += itemEarned;
+  });
+
+  const finalScore = Math.min(100, Math.max(0, totalScore));
+  const missingItems = items
+    .filter(item => item.earned < item.points)
+    .sort((a, b) => (b.points - b.earned) - (a.points - a.earned));
+
+  return {
+    score: finalScore,
+    breakdown: items,
+    missingItems,
+    completedCount: items.filter(item => item.earned === item.points).length,
+    totalItemsCount: items.length
+  };
+}
+
 // 1. Dashboard Stats
 exports.getDashboardStats = async (req, res) => {
   try {
@@ -101,16 +246,9 @@ exports.getDashboardStats = async (req, res) => {
       }
     });
 
-    // Profile completeness score
+    // Profile completeness score & stats calculation
     const profile = await getOrCreateCandidateProfile(candidateId);
-    let score = 20; // base account
-    if (profile.phone && profile.city) score += 15;
-    if (profile.designation && profile.professionalCategory) score += 20;
-    if (profile.educations?.length > 0) score += 15;
-    if (profile.experiences?.length > 0) score += 15;
-    if (profile.skills?.length > 0) score += 10;
-    if (profile.resumeUrl) score += 5;
-    score = Math.min(100, score);
+    const completeness = calculateProfileCompleteness(profile);
 
     res.json({
       success: true,
@@ -120,12 +258,16 @@ exports.getDashboardStats = async (req, res) => {
           shortlisted: shortlistedCount,
           interviews: interviewsCount,
           savedJobs: savedJobsCount,
-          profileCompleteness: score
+          profileCompleteness: completeness.score
         },
+        completenessDetails: completeness,
         recentApplications,
         upcomingInterviews,
         recommendedJobs,
-        profile
+        profile: {
+          ...profile,
+          completeness
+        }
       }
     });
   } catch (error) {
@@ -138,7 +280,14 @@ exports.getDashboardStats = async (req, res) => {
 exports.getProfile = async (req, res) => {
   try {
     const profile = await getOrCreateCandidateProfile(req.user.id);
-    res.json({ success: true, data: profile });
+    const completeness = calculateProfileCompleteness(profile);
+    res.json({ 
+      success: true, 
+      data: {
+        ...profile,
+        completeness
+      } 
+    });
   } catch (error) {
     console.error('Error fetching candidate profile:', error);
     res.status(500).json({ success: false, message: error.message });
@@ -664,6 +813,17 @@ exports.getInterviews = async (req, res) => {
 exports.getSettings = async (req, res) => {
   try {
     const profile = await getOrCreateCandidateProfile(req.user.id);
+    const subscriber = await prisma.stayUpdatedSubscriber.findFirst({
+      where: {
+        OR: [
+          { userId: req.user.id },
+          { email: profile.user.email.toLowerCase() }
+        ]
+      }
+    });
+
+    const isStayUpdated = Boolean(profile.stayUpdated || profile.user.stayUpdated || subscriber);
+
     res.json({
       success: true,
       data: {
@@ -671,10 +831,12 @@ exports.getSettings = async (req, res) => {
         jobAlerts: profile.jobAlerts !== undefined ? profile.jobAlerts : true,
         applicationUpdates: profile.applicationUpdates !== undefined ? profile.applicationUpdates : true,
         interviewReminders: profile.interviewReminders !== undefined ? profile.interviewReminders : true,
+        stayUpdated: isStayUpdated,
         user: {
           id: profile.user.id,
           name: profile.user.name,
-          email: profile.user.email
+          email: profile.user.email,
+          stayUpdated: isStayUpdated
         }
       }
     });
@@ -686,13 +848,14 @@ exports.getSettings = async (req, res) => {
 
 exports.updateSettings = async (req, res) => {
   try {
-    const { visibility, jobAlerts, applicationUpdates, interviewReminders, password, currentPassword } = req.body;
+    const { visibility, jobAlerts, applicationUpdates, interviewReminders, stayUpdated, password, currentPassword } = req.body;
 
     const profileData = {};
     if (visibility !== undefined) profileData.visibility = visibility;
     if (jobAlerts !== undefined) profileData.jobAlerts = Boolean(jobAlerts);
     if (applicationUpdates !== undefined) profileData.applicationUpdates = Boolean(applicationUpdates);
     if (interviewReminders !== undefined) profileData.interviewReminders = Boolean(interviewReminders);
+    if (stayUpdated !== undefined) profileData.stayUpdated = Boolean(stayUpdated);
 
     if (Object.keys(profileData).length > 0) {
       await prisma.candidateProfile.upsert({
@@ -700,6 +863,31 @@ exports.updateSettings = async (req, res) => {
         create: { userId: req.user.id, ...profileData },
         update: profileData
       });
+    }
+
+    if (stayUpdated !== undefined) {
+      await prisma.user.update({
+        where: { id: req.user.id },
+        data: { stayUpdated: Boolean(stayUpdated) }
+      });
+
+      const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+      if (stayUpdated && user) {
+        await prisma.stayUpdatedSubscriber.upsert({
+          where: { email: user.email.toLowerCase() },
+          create: { email: user.email.toLowerCase(), userId: user.id },
+          update: { userId: user.id }
+        });
+      } else if (!stayUpdated && user) {
+        await prisma.stayUpdatedSubscriber.deleteMany({
+          where: {
+            OR: [
+              { userId: user.id },
+              { email: user.email.toLowerCase() }
+            ]
+          }
+        });
+      }
     }
 
     if (password) {
@@ -727,7 +915,8 @@ exports.updateSettings = async (req, res) => {
         visibility: updatedProfile.visibility || 'PUBLIC',
         jobAlerts: updatedProfile.jobAlerts !== undefined ? updatedProfile.jobAlerts : true,
         applicationUpdates: updatedProfile.applicationUpdates !== undefined ? updatedProfile.applicationUpdates : true,
-        interviewReminders: updatedProfile.interviewReminders !== undefined ? updatedProfile.interviewReminders : true
+        interviewReminders: updatedProfile.interviewReminders !== undefined ? updatedProfile.interviewReminders : true,
+        stayUpdated: updatedProfile.stayUpdated !== undefined ? updatedProfile.stayUpdated : false
       }
     });
   } catch (error) {
@@ -735,3 +924,6 @@ exports.updateSettings = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+exports.calculateProfileCompleteness = calculateProfileCompleteness;
+
