@@ -668,12 +668,9 @@ exports.getSettings = async (req, res) => {
       success: true,
       data: {
         visibility: profile.visibility || 'PUBLIC',
-        notifications: {
-          jobAlerts: true,
-          applicationUpdates: true,
-          interviewReminders: true,
-          newsletter: false
-        },
+        jobAlerts: profile.jobAlerts !== undefined ? profile.jobAlerts : true,
+        applicationUpdates: profile.applicationUpdates !== undefined ? profile.applicationUpdates : true,
+        interviewReminders: profile.interviewReminders !== undefined ? profile.interviewReminders : true,
         user: {
           id: profile.user.id,
           name: profile.user.name,
@@ -689,19 +686,25 @@ exports.getSettings = async (req, res) => {
 
 exports.updateSettings = async (req, res) => {
   try {
-    const { visibility, password, currentPassword } = req.body;
+    const { visibility, jobAlerts, applicationUpdates, interviewReminders, password, currentPassword } = req.body;
 
-    if (visibility) {
+    const profileData = {};
+    if (visibility !== undefined) profileData.visibility = visibility;
+    if (jobAlerts !== undefined) profileData.jobAlerts = Boolean(jobAlerts);
+    if (applicationUpdates !== undefined) profileData.applicationUpdates = Boolean(applicationUpdates);
+    if (interviewReminders !== undefined) profileData.interviewReminders = Boolean(interviewReminders);
+
+    if (Object.keys(profileData).length > 0) {
       await prisma.candidateProfile.upsert({
         where: { userId: req.user.id },
-        create: { userId: req.user.id, visibility },
-        update: { visibility }
+        create: { userId: req.user.id, ...profileData },
+        update: profileData
       });
     }
 
     if (password) {
+      const user = await prisma.user.findUnique({ where: { id: req.user.id } });
       if (currentPassword) {
-        const user = await prisma.user.findUnique({ where: { id: req.user.id } });
         const isMatch = await bcrypt.compare(currentPassword, user.password);
         if (!isMatch) {
           return res.status(400).json({ success: false, message: 'Current password is incorrect' });
@@ -715,7 +718,18 @@ exports.updateSettings = async (req, res) => {
       });
     }
 
-    res.json({ success: true, message: 'Settings updated successfully' });
+    const updatedProfile = await getOrCreateCandidateProfile(req.user.id);
+
+    res.json({
+      success: true,
+      message: 'Settings updated successfully',
+      data: {
+        visibility: updatedProfile.visibility || 'PUBLIC',
+        jobAlerts: updatedProfile.jobAlerts !== undefined ? updatedProfile.jobAlerts : true,
+        applicationUpdates: updatedProfile.applicationUpdates !== undefined ? updatedProfile.applicationUpdates : true,
+        interviewReminders: updatedProfile.interviewReminders !== undefined ? updatedProfile.interviewReminders : true
+      }
+    });
   } catch (error) {
     console.error('Error updating candidate settings:', error);
     res.status(500).json({ success: false, message: error.message });

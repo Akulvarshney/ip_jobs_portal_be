@@ -45,6 +45,9 @@ model CandidateProfile {
   profilePhoto         String?
   bio                  String?
   visibility           String?          @default("PUBLIC") // PUBLIC, CONFIDENTIAL, PRIVATE
+  jobAlerts            Boolean          @default(true)
+  applicationUpdates   Boolean          @default(true)
+  interviewReminders   Boolean          @default(true)
   resumeUrl            String?
   educations           Education[]
   experiences          Experience[]
