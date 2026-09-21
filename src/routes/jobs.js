@@ -11,5 +11,6 @@ router.get('/:id', authenticate.optional, jobsController.getJobById);
 // Protected employer endpoints
 router.get('/employer', authenticate, jobsController.getEmployerJobs);
 router.post('/', authenticate, jobsController.createJob);
+router.put('/:id', authenticate, jobsController.updateJob);
 
 module.exports = router;

@@ -233,9 +233,14 @@ exports.getDashboardStats = async (req, res) => {
       }
     });
 
-    // Recommended / Open Jobs
+    // Recommended / Open Jobs (excluding jobs the candidate has already applied to)
     const recommendedJobs = await prisma.job.findMany({
-      where: { status: 'ACTIVE' },
+      where: {
+        status: 'ACTIVE',
+        applications: {
+          none: { candidateId }
+        }
+      },
       take: 4,
       orderBy: { createdAt: 'desc' },
       include: {

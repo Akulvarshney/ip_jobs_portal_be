@@ -296,6 +296,9 @@ async function main() {
       requirements: 'Valid IBBI Registration, 5+ years post-qualification experience in IBC, proven track record with real estate / infrastructure CIRP mandates.',
       employerIndex: 0, // Arcil
       status: 'ACTIVE',
+      jobType: 'MANDATE_BASED',
+      salaryRange: 'RANGE_25_TO_40_LPA',
+      experienceLevel: 'SENIOR_LEVEL',
       skillIndices: [0, 1, 3, 8, 9],
     },
     {
@@ -304,6 +307,9 @@ async function main() {
       requirements: 'Chartered Accountant (CA) or MBA Finance with 3-6 years of experience in corporate restructuring, stressed debt underwriting, or transaction advisory.',
       employerIndex: 1, // Alvarez & Marsal
       status: 'ACTIVE',
+      jobType: 'FULL_TIME',
+      salaryRange: 'RANGE_18_TO_25_LPA',
+      experienceLevel: 'MID_LEVEL',
       skillIndices: [0, 5, 6, 7, 11],
     },
     {
@@ -312,6 +318,9 @@ async function main() {
       requirements: 'LLB / LLM with 3-7 years in commercial litigation and IBC practice. Excellent court pleading and legal drafting capability.',
       employerIndex: 2, // Cyril Amarchand
       status: 'ACTIVE',
+      jobType: 'CONTRACT',
+      salaryRange: 'RANGE_12_TO_18_LPA',
+      experienceLevel: 'MID_LEVEL',
       skillIndices: [3, 4, 13, 10],
     },
     {
@@ -320,6 +329,9 @@ async function main() {
       requirements: 'CA/CS with 4+ years of relevant experience in claims verification and statutory reporting under IBBI regulations.',
       employerIndex: 3, // BDO India
       status: 'ACTIVE',
+      jobType: 'PART_TIME',
+      salaryRange: 'RANGE_12_TO_18_LPA',
+      experienceLevel: 'MID_LEVEL',
       skillIndices: [0, 1, 8, 10],
     },
     {
@@ -328,7 +340,21 @@ async function main() {
       requirements: 'Senior banking professional with 10+ years experience in corporate recovery, stressed assets, or SARFAESI/IBC enforcement.',
       employerIndex: 5, // SBI SAMB
       status: 'ACTIVE',
+      jobType: 'FULL_TIME',
+      salaryRange: 'RANGE_25_TO_40_LPA',
+      experienceLevel: 'DIRECTOR_EXECUTIVE',
       skillIndices: [0, 5, 8, 12],
+    },
+    {
+      title: 'IBC & Restructuring Legal Intern',
+      description: 'Assist Senior Insolvency Associates with research on NCLT & NCLAT judicial precedents, proof of claim verifications, and drafting CIRP compliance notices.',
+      requirements: 'Final-year Law / CA student with strong academic understanding of IBC 2016 and Company Law.',
+      employerIndex: 2, // Cyril Amarchand
+      status: 'ACTIVE',
+      jobType: 'INTERNSHIP',
+      salaryRange: 'UNDER_6_LPA',
+      experienceLevel: 'ENTRY_LEVEL',
+      skillIndices: [3, 4, 10],
     },
   ];
 
@@ -348,6 +374,9 @@ async function main() {
           description: jd.description,
           requirements: jd.requirements,
           status: jd.status,
+          jobType: jd.jobType || 'FULL_TIME',
+          salaryRange: jd.salaryRange || 'NEGOTIABLE',
+          experienceLevel: jd.experienceLevel || 'MID_LEVEL',
           employerId: employer.id,
         },
       });

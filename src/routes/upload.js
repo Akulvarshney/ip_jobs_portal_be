@@ -82,8 +82,8 @@ router.post('/avatar', authenticate, avatarUpload.single('file'), uploadControll
 router.post('/document', authenticate, documentUpload.single('file'), uploadController.uploadDocument);
 router.post('/company-logo', authenticate, logoUpload.single('file'), uploadController.uploadCompanyLogo);
 
-// Proxy streaming endpoint for R2 objects
-router.get('/file/*key', uploadController.getFileProxy);
+// Proxy streaming endpoint for R2 objects (Express 5 wildcard syntax)
+router.get('/file/{*key}', uploadController.getFileProxy);
 
 // Multer and File Upload Error Handling Middleware
 router.use((err, req, res, next) => {

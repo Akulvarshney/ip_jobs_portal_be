@@ -183,6 +183,7 @@ exports.register = async (req, res) => {
         email: user.email,
         role: user.role,
         authProvider: 'EMAIL',
+        theme: user.theme,
         stayUpdated: user.stayUpdated || false
       }
     });
@@ -221,6 +222,7 @@ exports.login = async (req, res) => {
         email: user.email,
         role: user.role,
         authProvider: user.authProvider || 'EMAIL',
+        theme: user.theme,
         stayUpdated: user.stayUpdated || false
       }
     });
@@ -350,6 +352,7 @@ exports.googleAuth = async (req, res) => {
         email: user.email,
         role: user.role,
         authProvider: user.authProvider || 'GOOGLE',
+        theme: user.theme,
         stayUpdated: user.stayUpdated || false
       }
     });
@@ -372,7 +375,8 @@ exports.getMe = async (req, res) => {
         status: true,
         authProvider: true,
         googleId: true,
-        stayUpdated: true
+        stayUpdated: true,
+        theme: true
       }
     });
     if (!user) return res.status(404).json({ error: 'User not found' });

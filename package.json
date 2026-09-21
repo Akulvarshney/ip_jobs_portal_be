@@ -5,8 +5,10 @@
   "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "test:theme": "node --test tests/theme.test.js",
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
+    "db:theme": "prisma db execute --file prisma/sql/add-user-theme.sql --schema prisma/schema.prisma && prisma generate",
     "postinstall": "prisma generate"
   },
   "repository": {

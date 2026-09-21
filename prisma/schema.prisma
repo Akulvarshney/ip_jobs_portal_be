@@ -13,6 +13,7 @@ model User {
   email                  String                 @unique
   password               String
   role                   Role
+  theme                  String                 @default("dark")
   status                 String                 @default("ACTIVE") // ACTIVE, SUSPENDED
   authProvider           String                 @default("EMAIL") // EMAIL, GOOGLE
   googleId               String?
@@ -142,19 +143,49 @@ model EmployerMember {
   role       String   @default("MEMBER") // ADMIN, RECRUITER, MEMBER
 }
 
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERNSHIP
+  MANDATE_BASED
+}
+
+enum SalaryRange {
+  UNDER_6_LPA
+  RANGE_6_TO_12_LPA
+  RANGE_12_TO_18_LPA
+  RANGE_18_TO_25_LPA
+  RANGE_25_TO_40_LPA
+  ABOVE_40_LPA
+  NEGOTIABLE
+}
+
+enum ExperienceLevel {
+  ENTRY_LEVEL
+  MID_LEVEL
+  SENIOR_LEVEL
+  DIRECTOR_EXECUTIVE
+  MANDATE_SPECIFIC
+}
+
 model Job {
-  id           Int           @id @default(autoincrement())
-  title        String
-  description  String
-  requirements String
-  createdAt    DateTime      @default(now())
-  employerId   Int
-  employer     Employer      @relation(fields: [employerId], references: [id], onDelete: Cascade)
-  applications Application[]
-  savedBy      SavedJob[]
-  skills       JobSkill[]
-  interviews   Interview[]
-  status       String        @default("ACTIVE") // ACTIVE, PAUSED, CLOSED
+  id              Int             @id @default(autoincrement())
+  title           String
+  description     String
+  requirements    String
+  jobType         JobType         @default(FULL_TIME)
+  salaryRange     SalaryRange     @default(NEGOTIABLE)
+  experienceLevel ExperienceLevel @default(MID_LEVEL)
+  createdAt       DateTime        @default(now())
+  employerId      Int
+  employer        Employer        @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  applications    Application[]
+  savedBy         SavedJob[]
+  skills          JobSkill[]
+  interviews      Interview[]
+  status          String          @default("ACTIVE") // ACTIVE, PAUSED, CLOSED
 }
 
 model JobSkill {

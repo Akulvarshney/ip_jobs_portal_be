@@ -250,7 +250,14 @@ exports.uploadCompanyLogo = async (req, res) => {
  */
 exports.getFileProxy = async (req, res) => {
   try {
-    const fileKey = req.params.key || req.params[0] || req.params['0'];
+    let fileKey = req.params.key;
+    if (Array.isArray(fileKey)) {
+      fileKey = fileKey.join('/');
+    } else if (typeof fileKey !== 'string') {
+      fileKey = req.params[0] || req.params['0'] || '';
+    }
+    fileKey = decodeURIComponent(fileKey).replace(/^\/+/, '');
+    
     if (!fileKey) {
       return res.status(400).json({ success: false, message: 'File key is required' });
     }

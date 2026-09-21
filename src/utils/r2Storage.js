@@ -92,10 +92,10 @@ const uploadToR2 = async ({ buffer, originalName, mimeType, folder = 'documents'
   await client.send(command);
 
   // Determine public URL:
-  // If R2_PUBLIC_URL is provided (e.g. https://pub-xxx.r2.dev or https://assets.mydomain.com), use it directly.
-  // Otherwise, construct direct public URL or provide internal proxy endpoint.
+  // If a valid public CDN/r2.dev URL is provided, use it.
+  // Otherwise, construct direct backend proxy endpoint.
   let fileUrl;
-  if (process.env.R2_PUBLIC_URL) {
+  if (process.env.R2_PUBLIC_URL && !process.env.R2_PUBLIC_URL.includes('.r2.cloudflarestorage.com')) {
     const baseUrl = process.env.R2_PUBLIC_URL.replace(/\/$/, '');
     fileUrl = `${baseUrl}/${key}`;
   } else {
