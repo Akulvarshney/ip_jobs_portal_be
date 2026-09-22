@@ -20,6 +20,9 @@ exports.getAllJobs = async (req, res) => {
 exports.getJobById = async (req, res) => {
   try {
     const jobId = Number(req.params.id);
+    if (!jobId || isNaN(jobId)) {
+      return res.status(400).json({ error: 'Valid numeric job ID is required' });
+    }
     const job = await prisma.job.findUnique({
       where: { id: jobId },
       include: {
@@ -62,6 +65,9 @@ exports.getJobById = async (req, res) => {
 exports.getCompanyById = async (req, res) => {
   try {
     const companyId = Number(req.params.id);
+    if (!companyId || isNaN(companyId)) {
+      return res.status(400).json({ error: 'Valid numeric company ID is required' });
+    }
     const company = await prisma.employer.findUnique({
       where: { id: companyId },
       include: {
