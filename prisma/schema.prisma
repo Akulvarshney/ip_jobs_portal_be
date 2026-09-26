@@ -149,7 +149,7 @@ enum JobType {
   PART_TIME
   CONTRACT
   INTERNSHIP
-  MANDATE_BASED
+  ASSIGNMENT_BASED
 }
 
 enum SalaryRange {

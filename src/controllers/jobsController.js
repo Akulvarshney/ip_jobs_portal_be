@@ -3,7 +3,7 @@ const prisma = require('../prisma');
 exports.getAllJobs = async (req, res) => {
   try {
     const jobs = await prisma.job.findMany({
-      include: { 
+      include: {
         employer: { select: { id: true, name: true, location: true, type: true } },
         skills: { include: { skill: true } },
         _count: { select: { applications: true } }
@@ -198,7 +198,7 @@ exports.createJob = async (req, res) => {
       employerId = employer.id;
     }
 
-    const validJobTypes = ['FULL_TIME', 'PART_TIME', 'CONTRACT', 'INTERNSHIP', 'MANDATE_BASED'];
+    const validJobTypes = ['FULL_TIME', 'PART_TIME', 'CONTRACT', 'INTERNSHIP', 'ASSIGNMENT_BASED'];
     const validSalaryRanges = ['UNDER_6_LPA', 'RANGE_6_TO_12_LPA', 'RANGE_12_TO_18_LPA', 'RANGE_18_TO_25_LPA', 'RANGE_25_TO_40_LPA', 'ABOVE_40_LPA', 'NEGOTIABLE'];
     const validExpLevels = ['ENTRY_LEVEL', 'MID_LEVEL', 'SENIOR_LEVEL', 'DIRECTOR_EXECUTIVE', 'MANDATE_SPECIFIC'];
 
@@ -270,7 +270,7 @@ exports.updateJob = async (req, res) => {
       }
     }
 
-    const validJobTypes = ['FULL_TIME', 'PART_TIME', 'CONTRACT', 'INTERNSHIP', 'MANDATE_BASED'];
+    const validJobTypes = ['FULL_TIME', 'PART_TIME', 'CONTRACT', 'INTERNSHIP', 'ASSIGNMENT_BASED'];
     const validSalaryRanges = ['UNDER_6_LPA', 'RANGE_6_TO_12_LPA', 'RANGE_12_TO_18_LPA', 'RANGE_18_TO_25_LPA', 'RANGE_25_TO_40_LPA', 'ABOVE_40_LPA', 'NEGOTIABLE'];
     const validExpLevels = ['ENTRY_LEVEL', 'MID_LEVEL', 'SENIOR_LEVEL', 'DIRECTOR_EXECUTIVE', 'MANDATE_SPECIFIC'];
 

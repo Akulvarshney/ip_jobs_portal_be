@@ -296,7 +296,7 @@ async function main() {
       requirements: 'Valid IBBI Registration, 5+ years post-qualification experience in IBC, proven track record with real estate / infrastructure CIRP mandates.',
       employerIndex: 0, // Arcil
       status: 'ACTIVE',
-      jobType: 'MANDATE_BASED',
+      jobType: 'ASSIGNMENT_BASED',
       salaryRange: 'RANGE_25_TO_40_LPA',
       experienceLevel: 'SENIOR_LEVEL',
       skillIndices: [0, 1, 3, 8, 9],
